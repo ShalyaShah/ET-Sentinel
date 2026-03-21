@@ -20,6 +20,14 @@ export interface HealthCheckData {
   liquidityStatus: string;
   riskLevel: 'Low' | 'Medium' | 'High';
   recommendation: string;
+  historicalBacktest?: {
+    patternName: string;
+    patternDescription: string;
+    occurrences: number;
+    successRate: number;
+    averageReturn: string;
+    timeframe: string;
+  };
 }
 
 export interface PortfolioAlert {

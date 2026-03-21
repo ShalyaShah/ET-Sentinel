@@ -48,7 +48,15 @@ export const MOCK_HEALTH_CHECKS: Record<string, HealthCheckData> = {
     fundamentalStatus: 'Weak - Debt concerns remain, negative sentiment delta in last concall.',
     liquidityStatus: 'Bearish - Insider pledging up 10%, DII holding dropping.',
     riskLevel: 'High',
-    recommendation: 'Avoid or strict stop loss. Confluence is broken (Technicals positive, Fundamentals/Liquidity negative).'
+    recommendation: 'Avoid or strict stop loss. Confluence is broken (Technicals positive, Fundamentals/Liquidity negative).',
+    historicalBacktest: {
+      patternName: '50 DMA Breakout with High Pledging',
+      patternDescription: 'A technical breakout above the 50-day moving average, but contradicted by insiders heavily pledging their shares for loans.',
+      occurrences: 14,
+      successRate: 28,
+      averageReturn: '-12.4%',
+      timeframe: '3 Months'
+    }
   },
   'HDFCBANK': {
     ticker: 'HDFCBANK',
@@ -58,7 +66,15 @@ export const MOCK_HEALTH_CHECKS: Record<string, HealthCheckData> = {
     fundamentalStatus: 'Bullish - Positive sentiment delta on margin expansion.',
     liquidityStatus: 'Neutral - Steady FII flows, no major block deals.',
     riskLevel: 'Low',
-    recommendation: 'Accumulate. Good fundamental setup awaiting technical confirmation (breakout above ₹1,480).'
+    recommendation: 'Accumulate. Good fundamental setup awaiting technical confirmation (breakout above ₹1,480).',
+    historicalBacktest: {
+      patternName: '52-Week Low Base + Positive Margin Delta',
+      patternDescription: 'The stock has formed a strong support base near its yearly low, while management simultaneously reports improving profit margins.',
+      occurrences: 8,
+      successRate: 87,
+      averageReturn: '+18.5%',
+      timeframe: '6 Months'
+    }
   }
 };
 
