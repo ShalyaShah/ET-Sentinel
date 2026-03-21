@@ -1,8 +1,47 @@
 import { GoogleGenAI, Type } from '@google/genai';
-import { HealthCheckData, PortfolioAlert, SignalCardData, BriefingSegment } from '../types';
+import { HealthCheckData, PortfolioAlert, SignalCardData, BriefingSegment, SectorFlow } from '../types';
 
 // Initialize the Gemini API client
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY as string });
+
+export async function generateSectorFlows(): Promise<SectorFlow[]> {
+  const currentDate = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  const schema = {
+    type: Type.ARRAY,
+    items: {
+      type: Type.OBJECT,
+      properties: {
+        sector: { type: Type.STRING, description: "Sector name (e.g., Infrastructure, Energy, IT, Banking, Auto, Pharma, FMCG, Metals)" },
+        flowScore: { type: Type.NUMBER, description: "Flow score from -100 (heavy selling) to 100 (heavy buying)" },
+        reason: { type: Type.STRING, description: "Short reason for the flow (e.g., 'Block deals in IRB Infra', 'FII selling')" }
+      },
+      required: ["sector", "flowScore", "reason"]
+    }
+  };
+
+  const prompt = `You are a market analyst tracking DII/FII capital deployment in the Indian stock market.
+  Today's date is ${currentDate}.
+  Generate a realistic, real-time sector flow analysis for 8 major sectors (Infrastructure, Energy, IT, Banking, Auto, Pharma, FMCG, Metals).
+  Assign a flow score from -100 to 100 for each sector, where positive means capital inflow (glowing green) and negative means outflow (red).
+  Provide a short, punchy reason for each score.
+  Format the output exactly according to the provided JSON schema.`;
+
+  const response = await ai.models.generateContent({
+    model: 'gemini-3-flash-preview',
+    contents: prompt,
+    config: {
+      responseMimeType: 'application/json',
+      responseSchema: schema,
+      temperature: 0.4,
+    }
+  });
+
+  if (!response.text) {
+    throw new Error("Failed to generate sector flows");
+  }
+
+  return JSON.parse(response.text) as SectorFlow[];
+}
 
 export async function generateDailyBriefing(signals: SignalCardData[]): Promise<BriefingSegment[]> {
   const currentDate = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
@@ -160,6 +199,47 @@ export async function analyzeStock(ticker: string): Promise<HealthCheckData> {
   }
 
   return JSON.parse(response.text) as HealthCheckData;
+}
+
+export async function generateSectorAlerts(sector: string): Promise<PortfolioAlert[]> {
+  const currentDate = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  const schema = {
+    type: Type.ARRAY,
+    items: {
+      type: Type.OBJECT,
+      properties: {
+        id: { type: Type.STRING },
+        ticker: { type: Type.STRING },
+        message: { type: Type.STRING, description: "A confluence signal or alert for a stock in this sector." },
+        type: { type: Type.STRING, description: "Must be 'warning', 'info', or 'action'" },
+        timestamp: { type: Type.STRING, description: "e.g., 'Just now'" }
+      },
+      required: ["id", "ticker", "message", "type", "timestamp"]
+    }
+  };
+
+  const prompt = `You are the "Opportunity Radar" for an Indian retail investor. 
+  Today's date is ${currentDate}.
+  The user has clicked on the ${sector} sector which is seeing heavy institutional flow.
+  Generate 2-3 highly specific confluence signals or alerts for stocks specifically within the ${sector} sector (e.g., if Infrastructure, maybe IRB Infra or L&T).
+  Highlight the technical and fundamental reasons for the setup.
+  Format the output exactly according to the provided JSON schema.`;
+
+  const response = await ai.models.generateContent({
+    model: 'gemini-3-flash-preview',
+    contents: prompt,
+    config: {
+      responseMimeType: 'application/json',
+      responseSchema: schema,
+      temperature: 0.4,
+    }
+  });
+
+  if (!response.text) {
+    throw new Error("Failed to generate sector alerts");
+  }
+
+  return JSON.parse(response.text) as PortfolioAlert[];
 }
 
 export async function generatePortfolioAlerts(holdings: string[]): Promise<PortfolioAlert[]> {

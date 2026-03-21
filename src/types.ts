@@ -56,3 +56,9 @@ export interface Holding {
   avgPrice: number;
   currentPrice: number;
 }
+
+export interface SectorFlow {
+  sector: string;
+  flowScore: number; // -100 to 100
+  reason: string;
+}

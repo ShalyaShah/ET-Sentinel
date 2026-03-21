@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { MOCK_PORTFOLIO_ALERTS, MOCK_HOLDINGS } from '../data';
 import { AlertCircle, Info, TrendingUp, TrendingDown, RefreshCw, Plus, Loader2, X } from 'lucide-react';
 import { motion } from 'motion/react';
-import { generatePortfolioAlerts } from '../services/geminiService';
+import { generatePortfolioAlerts, generateSectorAlerts } from '../services/geminiService';
 import { PortfolioAlert, Holding } from '../types';
+import { SectorFlowGrid } from './SectorFlowGrid';
 
 const INITIAL_HOLDINGS: Holding[] = [
   { ticker: 'IOCL', companyName: 'Indian Oil Corporation', shares: 500, avgPrice: 130, currentPrice: 165 },
@@ -19,14 +20,23 @@ export function Portfolio() {
   const [newShares, setNewShares] = useState('');
   const [newPrice, setNewPrice] = useState('');
   const [isAddingDetails, setIsAddingDetails] = useState(false);
+  const [selectedSector, setSelectedSector] = useState<string | null>(null);
 
   const fetchAlerts = async () => {
-    if (holdings.length === 0) return;
     setIsGenerating(true);
     try {
-      const tickers = holdings.map(h => h.ticker);
-      const generatedAlerts = await generatePortfolioAlerts(tickers);
-      setAlerts(generatedAlerts);
+      if (selectedSector) {
+        const generatedAlerts = await generateSectorAlerts(selectedSector);
+        setAlerts(generatedAlerts);
+      } else {
+        if (holdings.length === 0) {
+          setAlerts([]);
+          return;
+        }
+        const tickers = holdings.map(h => h.ticker);
+        const generatedAlerts = await generatePortfolioAlerts(tickers);
+        setAlerts(generatedAlerts);
+      }
     } catch (error) {
       console.error("Failed to fetch alerts:", error);
     } finally {
@@ -36,7 +46,7 @@ export function Portfolio() {
 
   useEffect(() => {
     fetchAlerts();
-  }, []);
+  }, [selectedSector]); // Re-fetch when sector changes
 
   const handleTickerSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,7 +87,7 @@ export function Portfolio() {
       <div className="flex justify-between items-end mb-8">
         <div>
           <h1 className="text-3xl font-bold text-white tracking-tight mb-2">Opportunity Radar</h1>
-          <p className="text-zinc-400">Portfolio-aware alerts based on your synced Demat account.</p>
+          <p className="text-zinc-400">Portfolio-aware alerts and real-time institutional flow analysis.</p>
         </div>
         <button 
           onClick={fetchAlerts}
@@ -85,18 +95,27 @@ export function Portfolio() {
           className="flex items-center space-x-2 text-sm text-zinc-400 hover:text-white transition-colors bg-zinc-900 px-4 py-2 rounded-lg border border-zinc-800 disabled:opacity-50"
         >
           {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-          <span>{isGenerating ? 'Scanning...' : 'Sync Broker'}</span>
+          <span>{isGenerating ? 'Scanning...' : 'Refresh'}</span>
         </button>
       </div>
 
+      <SectorFlowGrid 
+        selectedSector={selectedSector} 
+        onSectorSelect={setSelectedSector} 
+      />
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
-          <h2 className="text-xl font-bold text-white tracking-tight border-b border-zinc-800 pb-4">Active Alerts</h2>
+          <h2 className="text-xl font-bold text-white tracking-tight border-b border-zinc-800 pb-4">
+            {selectedSector ? `${selectedSector} Sector Signals` : 'Portfolio Alerts'}
+          </h2>
           
           {isGenerating ? (
             <div className="p-12 text-center bg-zinc-900 border border-zinc-800 rounded-2xl">
               <Loader2 className="w-8 h-8 text-emerald-500 animate-spin mx-auto mb-4" />
-              <p className="text-zinc-400">Opportunity Radar is scanning your portfolio...</p>
+              <p className="text-zinc-400">
+                {selectedSector ? `Scanning ${selectedSector} sector for confluence setups...` : 'Opportunity Radar is scanning your portfolio...'}
+              </p>
             </div>
           ) : alerts.length > 0 ? (
             alerts.map((alert, index) => (
@@ -129,7 +148,11 @@ export function Portfolio() {
             ))
           ) : (
             <div className="text-center p-8 bg-zinc-900 border border-zinc-800 rounded-2xl">
-              <p className="text-zinc-400">No active alerts for your portfolio.</p>
+              <p className="text-zinc-400">
+                {selectedSector 
+                  ? `No high-conviction signals found in the ${selectedSector} sector right now.` 
+                  : 'No active alerts for your portfolio.'}
+              </p>
             </div>
           )}
         </div>
