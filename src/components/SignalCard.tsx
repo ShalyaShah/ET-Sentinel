@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { SignalCardData } from '../types';
-import { TrendingUp, TrendingDown, Activity, Clock, ShieldAlert, Zap } from 'lucide-react';
-import { motion } from 'motion/react';
+import { TrendingUp, TrendingDown, Activity, Clock, ShieldAlert, Zap, Calculator, ChevronDown, ChevronUp } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { PositionSizer } from './PositionSizer';
 
 interface SignalCardProps {
   signal: SignalCardData;
@@ -10,6 +11,7 @@ interface SignalCardProps {
 export function SignalCard({ signal }: SignalCardProps) {
   const isBullish = signal.type === 'bullish';
   const isBearish = signal.type === 'bearish';
+  const [showSizer, setShowSizer] = useState(false);
 
   return (
     <motion.div
@@ -64,6 +66,40 @@ export function SignalCard({ signal }: SignalCardProps) {
             <p className="text-zinc-400 text-sm">{signal.riskManagement}</p>
           </div>
         </div>
+
+        {signal.currentPrice && signal.stopLossPrice && signal.targetPrice && signal.winRate && (
+          <div className="mt-4">
+            <button
+              onClick={() => setShowSizer(!showSizer)}
+              className="w-full flex items-center justify-center space-x-2 py-3 bg-zinc-800/30 hover:bg-zinc-800/60 text-zinc-300 rounded-xl border border-zinc-700/50 transition-colors"
+            >
+              <Calculator className="w-4 h-4 text-emerald-500" />
+              <span className="text-sm font-medium">
+                {showSizer ? 'Hide Position Sizer' : 'Calculate Position Size'}
+              </span>
+              {showSizer ? <ChevronUp className="w-4 h-4 text-zinc-500" /> : <ChevronDown className="w-4 h-4 text-zinc-500" />}
+            </button>
+
+            <AnimatePresence>
+              {showSizer && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden"
+                >
+                  <PositionSizer 
+                    currentPrice={signal.currentPrice}
+                    stopLossPrice={signal.stopLossPrice}
+                    targetPrice={signal.targetPrice}
+                    winRate={signal.winRate}
+                    type={signal.type}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
       </div>
     </motion.div>
   );

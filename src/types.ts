@@ -14,6 +14,10 @@ export interface SignalCardData {
   riskManagement: string;
   timestamp: string;
   type: 'bullish' | 'bearish' | 'neutral';
+  currentPrice: number;
+  stopLossPrice: number;
+  targetPrice: number;
+  winRate: number; // percentage 0-100
 }
 
 export interface HealthCheckData {

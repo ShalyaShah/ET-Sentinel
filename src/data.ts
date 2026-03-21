@@ -12,6 +12,10 @@ export const MOCK_SIGNALS: SignalCardData[] = [
     riskManagement: 'Suggested Stop Loss based on recent swing low: ₹940.',
     timestamp: '2 hours ago',
     type: 'bullish',
+    currentPrice: 960,
+    stopLossPrice: 940,
+    targetPrice: 1020,
+    winRate: 72
   },
   {
     id: '2',
@@ -24,6 +28,10 @@ export const MOCK_SIGNALS: SignalCardData[] = [
     riskManagement: 'Suggested Stop Loss below 200-Day EMA: ₹2,850.',
     timestamp: '5 hours ago',
     type: 'bullish',
+    currentPrice: 2900,
+    stopLossPrice: 2850,
+    targetPrice: 3100,
+    winRate: 80
   },
   {
     id: '3',
@@ -36,6 +44,10 @@ export const MOCK_SIGNALS: SignalCardData[] = [
     riskManagement: 'Consider hedging or tightening stop loss if holding long.',
     timestamp: '1 day ago',
     type: 'bearish',
+    currentPrice: 520,
+    stopLossPrice: 535,
+    targetPrice: 480,
+    winRate: 65
   }
 ];
 

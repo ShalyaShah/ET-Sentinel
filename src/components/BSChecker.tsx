@@ -3,6 +3,7 @@ import { Search, AlertTriangle, CheckCircle, Info, Activity, History, Loader2 } 
 import { HealthCheckData } from '../types';
 import { analyzeStock } from '../services/geminiService';
 import { motion } from 'motion/react';
+import { useChatContext } from '../context/ChatContext';
 import {
   LineChart,
   Line,
@@ -20,6 +21,11 @@ export function BSChecker() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loadingStep, setLoadingStep] = useState(0);
+  const { setContextString } = useChatContext();
+
+  useEffect(() => {
+    setContextString('User is viewing the BS-Checker tab, waiting to search for a stock.');
+  }, [setContextString]);
 
   const loadingMessages = [
     'Connecting to NSE/BSE feeds...',
@@ -53,6 +59,7 @@ export function BSChecker() {
     try {
       const data = await analyzeStock(query.toUpperCase().trim());
       setResult(data);
+      setContextString(`User is viewing the BS-Checker tab for the stock: ${data.ticker} (${data.companyName}). The AI analysis returned a Risk Level of ${data.riskLevel} with the verdict: "${data.recommendation}".`);
     } catch (err) {
       console.error(err);
       setError("Failed to analyze stock. Please try again.");

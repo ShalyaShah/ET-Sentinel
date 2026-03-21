@@ -43,6 +43,49 @@ export async function generateSectorFlows(): Promise<SectorFlow[]> {
   return JSON.parse(response.text) as SectorFlow[];
 }
 
+export interface ChatResponse {
+  text: string;
+  sources: { title: string; uri: string }[];
+}
+
+export async function chatWithContext(
+  message: string,
+  context: string,
+  history: { role: string; parts: { text: string }[] }[]
+): Promise<ChatResponse> {
+  const systemInstruction = `You are ET Sentinel, an expert Indian stock market AI assistant.
+Your goal is to answer user questions accurately and concisely.
+Current Context: ${context}
+If the user asks about a specific stock, use the Google Search tool to find recent news, bulk deals, or filings, and provide inline citations.`;
+
+  const response = await ai.models.generateContent({
+    model: 'gemini-3.1-pro-preview',
+    contents: [...history, { role: 'user', parts: [{ text: message }] }],
+    config: {
+      systemInstruction,
+      tools: [{ googleSearch: {} }],
+      temperature: 0.3,
+    },
+  });
+
+  if (!response.text) {
+    throw new Error('Failed to generate chat response');
+  }
+
+  const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
+  const sources = chunks
+    .filter((chunk: any) => chunk.web?.uri && chunk.web?.title)
+    .map((chunk: any) => ({
+      title: chunk.web.title,
+      uri: chunk.web.uri,
+    }));
+
+  return {
+    text: response.text,
+    sources,
+  };
+}
+
 export async function generateDailyBriefing(signals: SignalCardData[]): Promise<BriefingSegment[]> {
   const currentDate = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   const schema = {
@@ -102,9 +145,13 @@ export async function generateFeed(riskProfile: string): Promise<SignalCardData[
         historicalOdds: { type: Type.STRING },
         riskManagement: { type: Type.STRING },
         timestamp: { type: Type.STRING },
-        type: { type: Type.STRING, description: "Must be 'bullish', 'bearish', or 'neutral'" }
+        type: { type: Type.STRING, description: "Must be 'bullish', 'bearish', or 'neutral'" },
+        currentPrice: { type: Type.NUMBER, description: "Current stock price in INR" },
+        stopLossPrice: { type: Type.NUMBER, description: "Stop loss price in INR" },
+        targetPrice: { type: Type.NUMBER, description: "Target price in INR" },
+        winRate: { type: Type.NUMBER, description: "Historical win rate percentage (e.g. 65 for 65%)" }
       },
-      required: ["id", "ticker", "companyName", "headline", "trigger", "timing", "historicalOdds", "riskManagement", "timestamp", "type"]
+      required: ["id", "ticker", "companyName", "headline", "trigger", "timing", "historicalOdds", "riskManagement", "timestamp", "type", "currentPrice", "stopLossPrice", "targetPrice", "winRate"]
     }
   };
 
