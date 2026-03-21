@@ -4,6 +4,31 @@ import { HealthCheckData, PortfolioAlert, SignalCardData } from '../types';
 // Initialize the Gemini API client
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY as string });
 
+export async function generateDailyBriefing(signals: SignalCardData[]): Promise<string> {
+  const prompt = `You are the host of a fast-paced, 30-second daily market briefing for Indian retail investors.
+  Here are the top 3 market movements/signals for today:
+  ${signals.map(s => `- ${s.ticker} (${s.companyName}): ${s.headline}. ${s.trigger}`).join('\n')}
+  
+  Write a highly punchy, engaging 30-second script summarizing these 3 setups. 
+  Make it sound like a professional financial news anchor. 
+  Do not include any formatting like bolding or asterisks, just the plain text to be read aloud.
+  Keep it under 100 words.`;
+
+  const response = await ai.models.generateContent({
+    model: 'gemini-3-flash-preview',
+    contents: prompt,
+    config: {
+      temperature: 0.5,
+    }
+  });
+
+  if (!response.text) {
+    throw new Error("Failed to generate daily briefing");
+  }
+
+  return response.text;
+}
+
 export async function generateFeed(riskProfile: string): Promise<SignalCardData[]> {
   const schema = {
     type: Type.ARRAY,
