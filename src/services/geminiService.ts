@@ -1,8 +1,54 @@
 import { GoogleGenAI, Type } from '@google/genai';
-import { HealthCheckData, PortfolioAlert } from '../types';
+import { HealthCheckData, PortfolioAlert, SignalCardData } from '../types';
 
 // Initialize the Gemini API client
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY as string });
+
+export async function generateFeed(riskProfile: string): Promise<SignalCardData[]> {
+  const schema = {
+    type: Type.ARRAY,
+    items: {
+      type: Type.OBJECT,
+      properties: {
+        id: { type: Type.STRING },
+        ticker: { type: Type.STRING },
+        companyName: { type: Type.STRING },
+        headline: { type: Type.STRING },
+        trigger: { type: Type.STRING },
+        timing: { type: Type.STRING },
+        historicalOdds: { type: Type.STRING },
+        riskManagement: { type: Type.STRING },
+        timestamp: { type: Type.STRING },
+        type: { type: Type.STRING, description: "Must be 'bullish', 'bearish', or 'neutral'" }
+      },
+      required: ["id", "ticker", "companyName", "headline", "trigger", "timing", "historicalOdds", "riskManagement", "timestamp", "type"]
+    }
+  };
+
+  const prompt = `You are ET Sentinel, an AI Confluence Engine for Indian retail investors.
+  Generate 3 realistic, high-conviction trading setups (signals) based on recent market context.
+  The user's risk profile is: ${riskProfile}.
+  If the user selects "Conservative", filter out high-beta small-cap signals and ONLY show Confluence setups for Nifty 50 stocks.
+  If "Balanced", include a mix.
+  If "Aggressive", focus on breakouts and mid-caps.
+  Format the output exactly according to the provided JSON schema.`;
+
+  const response = await ai.models.generateContent({
+    model: 'gemini-3-flash-preview',
+    contents: prompt,
+    config: {
+      responseMimeType: 'application/json',
+      responseSchema: schema,
+      temperature: 0.4,
+    }
+  });
+
+  if (!response.text) {
+    throw new Error("Failed to generate feed");
+  }
+
+  return JSON.parse(response.text) as SignalCardData[];
+}
 
 export async function analyzeStock(ticker: string): Promise<HealthCheckData> {
   const schema = {
