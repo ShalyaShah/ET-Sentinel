@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from '@google/genai';
-import { HealthCheckData } from '../types';
+import { HealthCheckData, PortfolioAlert } from '../types';
 
 // Initialize the Gemini API client
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY as string });
@@ -52,4 +52,43 @@ export async function analyzeStock(ticker: string): Promise<HealthCheckData> {
   }
 
   return JSON.parse(response.text) as HealthCheckData;
+}
+
+export async function generatePortfolioAlerts(holdings: string[]): Promise<PortfolioAlert[]> {
+  const schema = {
+    type: Type.ARRAY,
+    items: {
+      type: Type.OBJECT,
+      properties: {
+        id: { type: Type.STRING },
+        ticker: { type: Type.STRING },
+        message: { type: Type.STRING, description: "A personalized alert message based on the portfolio context." },
+        type: { type: Type.STRING, description: "Must be 'warning', 'info', or 'action'" },
+        timestamp: { type: Type.STRING, description: "e.g., 'Just now'" }
+      },
+      required: ["id", "ticker", "message", "type", "timestamp"]
+    }
+  };
+
+  const prompt = `You are the "Opportunity Radar" for an Indian retail investor. 
+  The user holds the following tickers in their portfolio: ${holdings.join(', ')}.
+  Generate 1-3 highly personalized, realistic alerts based on recent market context (e.g., FII/DII flows, sector rotation, technical breakdowns, or fundamental news) that affect these specific holdings or their sectors.
+  For example, if they hold PGINVIT, you might warn about FIIs reducing exposure in the infrastructure sector.
+  Format the output exactly according to the provided JSON schema.`;
+
+  const response = await ai.models.generateContent({
+    model: 'gemini-3-flash-preview',
+    contents: prompt,
+    config: {
+      responseMimeType: 'application/json',
+      responseSchema: schema,
+      temperature: 0.4,
+    }
+  });
+
+  if (!response.text) {
+    throw new Error("Failed to generate portfolio alerts");
+  }
+
+  return JSON.parse(response.text) as PortfolioAlert[];
 }
