@@ -1,23 +1,41 @@
 import { GoogleGenAI, Type } from '@google/genai';
-import { HealthCheckData, PortfolioAlert, SignalCardData } from '../types';
+import { HealthCheckData, PortfolioAlert, SignalCardData, BriefingSegment } from '../types';
 
 // Initialize the Gemini API client
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY as string });
 
-export async function generateDailyBriefing(signals: SignalCardData[]): Promise<string> {
+export async function generateDailyBriefing(signals: SignalCardData[]): Promise<BriefingSegment[]> {
+  const currentDate = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  const schema = {
+    type: Type.ARRAY,
+    items: {
+      type: Type.OBJECT,
+      properties: {
+        signalId: { type: Type.STRING, description: "The ID of the signal this text refers to. Use 'intro' for the introduction and 'outro' for the conclusion." },
+        text: { type: Type.STRING, description: "The spoken text for this segment" }
+      },
+      required: ["signalId", "text"]
+    }
+  };
+
   const prompt = `You are the host of a fast-paced, 30-second daily market briefing for Indian retail investors.
+  Today's date is ${currentDate}.
   Here are the top 3 market movements/signals for today:
-  ${signals.map(s => `- ${s.ticker} (${s.companyName}): ${s.headline}. ${s.trigger}`).join('\n')}
+  ${signals.map(s => `ID: ${s.id} | ${s.ticker} (${s.companyName}): ${s.headline}. ${s.trigger}`).join('\n')}
   
   Write a highly punchy, engaging 30-second script summarizing these 3 setups. 
   Make it sound like a professional financial news anchor. 
+  Break the script down into segments. Start with an 'intro', then one segment for each signal ID, and optionally an 'outro'.
   Do not include any formatting like bolding or asterisks, just the plain text to be read aloud.
-  Keep it under 100 words.`;
+  Keep it under 100 words total.
+  Format the output exactly according to the provided JSON schema.`;
 
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
     contents: prompt,
     config: {
+      responseMimeType: 'application/json',
+      responseSchema: schema,
       temperature: 0.5,
     }
   });
@@ -26,10 +44,11 @@ export async function generateDailyBriefing(signals: SignalCardData[]): Promise<
     throw new Error("Failed to generate daily briefing");
   }
 
-  return response.text;
+  return JSON.parse(response.text) as BriefingSegment[];
 }
 
 export async function generateFeed(riskProfile: string): Promise<SignalCardData[]> {
+  const currentDate = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   const schema = {
     type: Type.ARRAY,
     items: {
@@ -51,6 +70,7 @@ export async function generateFeed(riskProfile: string): Promise<SignalCardData[
   };
 
   const prompt = `You are ET Sentinel, an AI Confluence Engine for Indian retail investors.
+  Today's date is ${currentDate}.
   Generate 3 realistic, high-conviction trading setups (signals) based on recent market context.
   The user's risk profile is: ${riskProfile}.
   If the user selects "Conservative", filter out high-beta small-cap signals and ONLY show Confluence setups for Nifty 50 stocks.
@@ -76,6 +96,7 @@ export async function generateFeed(riskProfile: string): Promise<SignalCardData[
 }
 
 export async function analyzeStock(ticker: string): Promise<HealthCheckData> {
+  const currentDate = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   const schema = {
     type: Type.OBJECT,
     properties: {
@@ -118,6 +139,7 @@ export async function analyzeStock(ticker: string): Promise<HealthCheckData> {
   };
 
   const prompt = `You are ET Sentinel, an AI Confluence Engine for Indian retail investors.
+  Today's date is ${currentDate}.
   Analyze the Indian stock ticker '${ticker}'.
   Provide a realistic, highly plausible analysis of its current technicals, fundamentals, and liquidity based on recent market context.
   Also generate 90 days of realistic daily price data for a 3-month sparkline. Include exactly one 'fundamentalTrigger' and exactly one 'technicalTrigger' on specific dates to illustrate confluence.
@@ -141,6 +163,7 @@ export async function analyzeStock(ticker: string): Promise<HealthCheckData> {
 }
 
 export async function generatePortfolioAlerts(holdings: string[]): Promise<PortfolioAlert[]> {
+  const currentDate = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   const schema = {
     type: Type.ARRAY,
     items: {
@@ -157,6 +180,7 @@ export async function generatePortfolioAlerts(holdings: string[]): Promise<Portf
   };
 
   const prompt = `You are the "Opportunity Radar" for an Indian retail investor. 
+  Today's date is ${currentDate}.
   The user holds the following tickers in their portfolio: ${holdings.join(', ')}.
   Generate 1-3 highly personalized, realistic alerts based on recent market context (e.g., FII/DII flows, sector rotation, technical breakdowns, or fundamental news) that affect these specific holdings or their sectors.
   For example, if they hold PGINVIT, you might warn about FIIs reducing exposure in the infrastructure sector.

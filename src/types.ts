@@ -1,3 +1,8 @@
+export interface BriefingSegment {
+  signalId: string;
+  text: string;
+}
+
 export interface SignalCardData {
   id: string;
   ticker: string;

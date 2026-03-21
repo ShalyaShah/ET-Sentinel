@@ -41,54 +41,46 @@ export function Feed({ riskProfile }: FeedProps) {
 
     setIsGeneratingAudio(true);
     try {
-      const script = await generateDailyBriefing(signals);
+      const segments = await generateDailyBriefing(signals);
       
       if (!synthRef.current) return;
-      
-      const utterance = new SpeechSynthesisUtterance(script);
-      utteranceRef.current = utterance;
       
       // Try to find a good voice
       const voices = synthRef.current.getVoices();
       const preferredVoice = voices.find(v => v.lang.includes('en-IN') || v.lang.includes('en-GB')) || voices[0];
-      if (preferredVoice) {
-        utterance.voice = preferredVoice;
-      }
       
-      utterance.rate = 1.1; // Slightly faster for a punchy feel
-      utterance.pitch = 1.0;
+      setIsPlaying(true);
+      setIsGeneratingAudio(false);
 
-      utterance.onstart = () => {
-        setIsPlaying(true);
-        setIsGeneratingAudio(false);
-        // Simple heuristic to highlight cards: switch every few seconds
-        // In a real app, we'd use SpeechSynthesisUtterance.onboundary to sync with words
-        let currentIndex = 0;
-        setActiveSignalId(signals[0].id);
-        
-        const interval = setInterval(() => {
-          currentIndex++;
-          if (currentIndex < signals.length) {
-            setActiveSignalId(signals[currentIndex].id);
-          } else {
-            clearInterval(interval);
+      segments.forEach((segment, index) => {
+        const utterance = new SpeechSynthesisUtterance(segment.text);
+        if (preferredVoice) {
+          utterance.voice = preferredVoice;
+        }
+        utterance.rate = 1.1; // Slightly faster for a punchy feel
+        utterance.pitch = 1.0;
+
+        utterance.onstart = () => {
+          if (segment.signalId && segment.signalId !== 'intro' && segment.signalId !== 'outro') {
+            setActiveSignalId(segment.signalId);
+          } else if (segment.signalId === 'intro') {
+            setActiveSignalId(null);
           }
-        }, 10000); // Switch every 10 seconds as a rough approximation for a 30s script
-        
-        utterance.onend = () => {
-          clearInterval(interval);
-          setIsPlaying(false);
-          setActiveSignalId(null);
         };
-        
-        utterance.onerror = () => {
-          clearInterval(interval);
-          setIsPlaying(false);
-          setActiveSignalId(null);
-        };
-      };
 
-      synthRef.current.speak(utterance);
+        if (index === segments.length - 1) {
+          utterance.onend = () => {
+            setIsPlaying(false);
+            setActiveSignalId(null);
+          };
+          utterance.onerror = () => {
+            setIsPlaying(false);
+            setActiveSignalId(null);
+          };
+        }
+
+        synthRef.current?.speak(utterance);
+      });
       
     } catch (err) {
       console.error("Failed to generate briefing:", err);
