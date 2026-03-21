@@ -3,6 +3,15 @@ import { Search, AlertTriangle, CheckCircle, Info, Activity, History, Loader2 } 
 import { HealthCheckData } from '../types';
 import { analyzeStock } from '../services/geminiService';
 import { motion } from 'motion/react';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  ReferenceDot,
+} from 'recharts';
 
 export function BSChecker() {
   const [query, setQuery] = useState('');
@@ -194,7 +203,93 @@ export function BSChecker() {
 
               <div className="mt-8 pt-6 border-t border-zinc-800">
                 <h4 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-2">Verdict</h4>
-                <p className="text-white font-medium text-lg">{result.recommendation}</p>
+                <p className="text-white font-medium text-lg mb-6">{result.recommendation}</p>
+
+                {result.chartData && result.chartData.length > 0 && (
+                  <div className="mt-6">
+                    <h4 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-4">3-Month Confluence Chart</h4>
+                    <div className="h-64 w-full bg-zinc-950 rounded-xl p-4 border border-zinc-800/50">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={result.chartData}>
+                          <XAxis 
+                            dataKey="date" 
+                            stroke="#52525b" 
+                            fontSize={12} 
+                            tickLine={false} 
+                            axisLine={false}
+                            minTickGap={30}
+                          />
+                          <YAxis 
+                            domain={['auto', 'auto']} 
+                            stroke="#52525b" 
+                            fontSize={12} 
+                            tickLine={false} 
+                            axisLine={false}
+                            tickFormatter={(value) => `₹${value}`}
+                          />
+                          <Tooltip 
+                            contentStyle={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '0.5rem' }}
+                            itemStyle={{ color: '#e4e4e7' }}
+                            labelStyle={{ color: '#a1a1aa', marginBottom: '0.25rem' }}
+                          />
+                          <Line 
+                            type="monotone" 
+                            dataKey="price" 
+                            stroke="#52525b" 
+                            strokeWidth={2} 
+                            dot={false}
+                            activeDot={{ r: 4, fill: '#e4e4e7' }}
+                          />
+                          {result.chartData.map((point, index) => {
+                            if (point.fundamentalTrigger) {
+                              return (
+                                <ReferenceDot 
+                                  key={`fund-${index}`}
+                                  x={point.date} 
+                                  y={point.price} 
+                                  r={6} 
+                                  fill="#3b82f6" 
+                                  stroke="#1e3a8a" 
+                                  strokeWidth={2}
+                                />
+                              );
+                            }
+                            if (point.technicalTrigger) {
+                              return (
+                                <ReferenceDot 
+                                  key={`tech-${index}`}
+                                  x={point.date} 
+                                  y={point.price} 
+                                  shape={(props: any) => {
+                                    const { cx, cy } = props;
+                                    return (
+                                      <svg x={cx - 12} y={cy - 12} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M12 19V5M5 12l7-7 7 7"/>
+                                      </svg>
+                                    );
+                                  }}
+                                />
+                              );
+                            }
+                            return null;
+                          })}
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="flex items-center justify-center space-x-6 mt-4">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-3 h-3 rounded-full bg-blue-500 border border-blue-900"></div>
+                        <span className="text-xs text-zinc-400">Fundamental Trigger</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M12 19V5M5 12l7-7 7 7"/>
+                        </svg>
+                        <span className="text-xs text-zinc-400">Technical Trigger</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           ) : (

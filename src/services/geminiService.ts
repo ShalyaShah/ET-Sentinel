@@ -27,14 +27,29 @@ export async function analyzeStock(ticker: string): Promise<HealthCheckData> {
           timeframe: { type: Type.STRING }
         },
         required: ["patternName", "patternDescription", "occurrences", "successRate", "averageReturn", "timeframe"]
+      },
+      chartData: {
+        type: Type.ARRAY,
+        description: "Generate 90 days of realistic daily price data for a 3-month sparkline. Exactly one day should have fundamentalTrigger: true, and exactly one day should have technicalTrigger: true. These two days should ideally be close to each other to show confluence.",
+        items: {
+          type: Type.OBJECT,
+          properties: {
+            date: { type: Type.STRING, description: "Format: MMM DD (e.g., Jan 15)" },
+            price: { type: Type.NUMBER },
+            fundamentalTrigger: { type: Type.BOOLEAN, description: "Set to true for exactly one day representing a fundamental event (e.g., earnings call)" },
+            technicalTrigger: { type: Type.BOOLEAN, description: "Set to true for exactly one day representing a technical event (e.g., breakout)" }
+          },
+          required: ["date", "price"]
+        }
       }
     },
-    required: ["ticker", "companyName", "summary", "technicalStatus", "fundamentalStatus", "liquidityStatus", "riskLevel", "recommendation", "historicalBacktest"]
+    required: ["ticker", "companyName", "summary", "technicalStatus", "fundamentalStatus", "liquidityStatus", "riskLevel", "recommendation", "historicalBacktest", "chartData"]
   };
 
   const prompt = `You are ET Sentinel, an AI Confluence Engine for Indian retail investors.
   Analyze the Indian stock ticker '${ticker}'.
   Provide a realistic, highly plausible analysis of its current technicals, fundamentals, and liquidity based on recent market context.
+  Also generate 90 days of realistic daily price data for a 3-month sparkline. Include exactly one 'fundamentalTrigger' and exactly one 'technicalTrigger' on specific dates to illustrate confluence.
   Format the output exactly according to the provided JSON schema.`;
 
   const response = await ai.models.generateContent({

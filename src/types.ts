@@ -28,6 +28,12 @@ export interface HealthCheckData {
     averageReturn: string;
     timeframe: string;
   };
+  chartData?: {
+    date: string;
+    price: number;
+    fundamentalTrigger?: boolean;
+    technicalTrigger?: boolean;
+  }[];
 }
 
 export interface PortfolioAlert {
