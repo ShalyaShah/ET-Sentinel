@@ -11,6 +11,7 @@ export function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
     { id: 'feed', label: 'Confluence Feed', icon: Home },
     { id: 'bschecker', label: 'BS-Checker', icon: Search },
     { id: 'portfolio', label: 'Opportunity Radar', icon: Briefcase },
+    { id: 'yield', label: 'Yield & Dividend', icon: Activity },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 

@@ -8,6 +8,7 @@ import { Sidebar } from './components/Sidebar';
 import { Feed } from './components/Feed';
 import { BSChecker } from './components/BSChecker';
 import { Portfolio } from './components/Portfolio';
+import { YieldDashboard } from './components/YieldDashboard';
 import { OnboardingModal } from './components/OnboardingModal';
 import { ChatProvider, useChatContext } from './context/ChatContext';
 import { ToastProvider } from './context/ToastContext';
@@ -33,6 +34,7 @@ function AppContent() {
   useEffect(() => {
     if (activeTab === 'feed') setContextString('User is viewing the Market Feed tab, looking at AI-generated trading signals.');
     else if (activeTab === 'portfolio') setContextString('User is viewing their Portfolio tab, looking at their current holdings and alerts.');
+    else if (activeTab === 'yield') setContextString('User is viewing the Yield & Dividend Dashboard (Confluence Engine).');
     else if (activeTab === 'settings') setContextString('User is viewing the Settings tab.');
     // BSChecker sets its own context when a stock is searched
   }, [activeTab, setContextString]);
@@ -54,6 +56,7 @@ function AppContent() {
         {activeTab === 'feed' && <Feed riskProfile={riskProfile || 'Balanced'} />}
         {activeTab === 'bschecker' && <BSChecker />}
         {activeTab === 'portfolio' && <Portfolio />}
+        {activeTab === 'yield' && <YieldDashboard />}
         {activeTab === 'settings' && (
           <div className="max-w-3xl mx-auto py-12 px-6 text-center">
             <h1 className="text-3xl font-bold text-white tracking-tight mb-4">Settings</h1>
