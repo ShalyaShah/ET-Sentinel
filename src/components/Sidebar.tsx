@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Search, Briefcase, Settings, Activity, Users } from 'lucide-react';
+import { Home, Search, Briefcase, Settings, Activity, Users, ShieldAlert } from 'lucide-react';
 
 interface SidebarProps {
   activeTab: string;
@@ -10,6 +10,7 @@ export function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
   const navItems = [
     { id: 'feed', label: 'Confluence Feed', icon: Home },
     { id: 'bschecker', label: 'BS-Checker', icon: Search },
+    { id: 'threatradar', label: 'Threat Radar', icon: ShieldAlert },
     { id: 'portfolio', label: 'Opportunity Radar', icon: Briefcase },
     { id: 'yield', label: 'Yield & Dividend', icon: Activity },
     { id: 'familypod', label: 'Family Pod', icon: Users },
