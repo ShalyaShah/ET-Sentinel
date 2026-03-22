@@ -11,6 +11,7 @@ import { Portfolio } from './components/Portfolio';
 import { YieldDashboard } from './components/YieldDashboard';
 import { FamilyPod } from './components/FamilyPod';
 import { ThreatRadar } from './components/ThreatRadar';
+import { RetailTrapRadar } from './components/RetailTrapRadar';
 import { OnboardingModal } from './components/OnboardingModal';
 import { ChatProvider, useChatContext } from './context/ChatContext';
 import { ToastProvider } from './context/ToastContext';
@@ -39,6 +40,7 @@ function AppContent() {
     else if (activeTab === 'yield') setContextString('User is viewing the Yield & Dividend Dashboard (Confluence Engine).');
     else if (activeTab === 'familypod') setContextString('User is viewing the Family Pod dashboard, analyzing aggregate exposure across multiple Demat accounts.');
     else if (activeTab === 'threatradar') setContextString('User is viewing the Threat Radar, scanning regulatory filings for hidden red flags.');
+    else if (activeTab === 'retailtrap') setContextString('User is viewing the Retail Trap Radar, analyzing the divergence between retail social media FOMO and institutional Smart Money action.');
     else if (activeTab === 'settings') setContextString('User is viewing the Settings tab.');
     // BSChecker sets its own context when a stock is searched
   }, [activeTab, setContextString]);
@@ -63,6 +65,7 @@ function AppContent() {
         {activeTab === 'yield' && <YieldDashboard />}
         {activeTab === 'familypod' && <FamilyPod />}
         {activeTab === 'threatradar' && <ThreatRadar />}
+        {activeTab === 'retailtrap' && <RetailTrapRadar />}
         {activeTab === 'settings' && (
           <div className="max-w-3xl mx-auto py-12 px-6 text-center">
             <h1 className="text-3xl font-bold text-white tracking-tight mb-4">Settings</h1>
