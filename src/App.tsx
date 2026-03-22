@@ -13,6 +13,7 @@ import { FamilyPod } from './components/FamilyPod';
 import { ThreatRadar } from './components/ThreatRadar';
 import { RetailTrapRadar } from './components/RetailTrapRadar';
 import { ExecutionHub } from './components/ExecutionHub';
+import { QuantTerminal } from './components/QuantTerminal';
 import { OnboardingModal } from './components/OnboardingModal';
 import { ChatProvider, useChatContext } from './context/ChatContext';
 import { ToastProvider } from './context/ToastContext';
@@ -43,6 +44,7 @@ function AppContent() {
     else if (activeTab === 'threatradar') setContextString('User is viewing the Threat Radar, scanning regulatory filings for hidden red flags.');
     else if (activeTab === 'retailtrap') setContextString('User is viewing the Retail Trap Radar, analyzing the divergence between retail social media FOMO and institutional Smart Money action.');
     else if (activeTab === 'execution') setContextString('User is viewing the Execution Hub, reviewing AI-generated draft orders pre-filled with Target, Stop-Loss, and Position Size, ready for one-click execution via broker API.');
+    else if (activeTab === 'quant') setContextString('User is viewing the Quant Terminal, a no-code visual builder to create custom backtests combining fundamental and technical variables.');
     else if (activeTab === 'settings') setContextString('User is viewing the Settings tab.');
     // BSChecker sets its own context when a stock is searched
   }, [activeTab, setContextString]);
@@ -69,6 +71,7 @@ function AppContent() {
         {activeTab === 'threatradar' && <ThreatRadar />}
         {activeTab === 'retailtrap' && <RetailTrapRadar />}
         {activeTab === 'execution' && <ExecutionHub />}
+        {activeTab === 'quant' && <QuantTerminal />}
         {activeTab === 'settings' && (
           <div className="max-w-3xl mx-auto py-12 px-6 text-center">
             <h1 className="text-3xl font-bold text-white tracking-tight mb-4">Settings</h1>

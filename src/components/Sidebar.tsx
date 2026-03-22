@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Search, Briefcase, Settings, Activity, Users, ShieldAlert, Radio, Zap } from 'lucide-react';
+import { Home, Search, Briefcase, Settings, Activity, Users, ShieldAlert, Radio, Zap, TestTube } from 'lucide-react';
 
 interface SidebarProps {
   activeTab: string;
@@ -12,6 +12,7 @@ export function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
     { id: 'bschecker', label: 'BS-Checker', icon: Search },
     { id: 'threatradar', label: 'Threat Radar', icon: ShieldAlert },
     { id: 'retailtrap', label: 'Retail Trap Radar', icon: Radio },
+    { id: 'quant', label: 'Quant Terminal', icon: TestTube },
     { id: 'portfolio', label: 'Opportunity Radar', icon: Briefcase },
     { id: 'yield', label: 'Yield & Dividend', icon: Activity },
     { id: 'familypod', label: 'Family Pod', icon: Users },
