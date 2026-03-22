@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'motion/react';
 import { TrendingUp, Calendar, ArrowDownCircle, Target, Zap, Info, ShieldCheck, BarChart3 } from 'lucide-react';
 import { useChatContext } from '../context/ChatContext';
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine } from 'recharts';
 
 interface YieldAsset {
   id: string;
@@ -89,6 +90,32 @@ export function YieldDashboard() {
   useEffect(() => {
     setContextString('User is viewing the Yield & Dividend Dashboard (Confluence Engine), looking at high-yield assets testing technical support levels.');
   }, [setContextString]);
+
+  // Generate mock historical data for the selected asset
+  const chartData = useMemo(() => {
+    if (!selectedAsset) return [];
+    const data = [];
+    let currentPrice = selectedAsset.currentPrice * 1.15; // Start 15% higher 30 days ago
+    const volatility = selectedAsset.currentPrice * 0.02;
+
+    for (let i = 30; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      
+      // Trend downwards towards current price
+      if (i > 0) {
+        currentPrice = currentPrice - (currentPrice - selectedAsset.currentPrice) / i + (Math.random() - 0.5) * volatility;
+      } else {
+        currentPrice = selectedAsset.currentPrice;
+      }
+
+      data.push({
+        date: date.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' }),
+        price: Number(currentPrice.toFixed(2)),
+      });
+    }
+    return data;
+  }, [selectedAsset]);
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-8">
@@ -213,16 +240,47 @@ export function YieldDashboard() {
               </button>
             </div>
             
-            <div className="aspect-video bg-zinc-950 rounded-xl border border-zinc-800 flex items-center justify-center mb-6 relative overflow-hidden">
-               <div className="absolute inset-0 opacity-20" style={{
-                  backgroundImage: 'linear-gradient(#3f3f46 1px, transparent 1px), linear-gradient(90deg, #3f3f46 1px, transparent 1px)',
-                  backgroundSize: '20px 20px'
-                }}></div>
-               <div className="text-center z-10">
-                 <BarChart3 className="w-12 h-12 text-zinc-700 mx-auto mb-3" />
-                 <p className="text-zinc-500 font-mono text-sm">Interactive Chart Visualization</p>
-                 <p className="text-zinc-600 text-xs mt-2">Showing Support Level at ₹{selectedAsset.supportLevel.toFixed(2)}</p>
-               </div>
+            <div className="aspect-video bg-zinc-950 rounded-xl border border-zinc-800 flex items-center justify-center mb-6 relative overflow-hidden p-4">
+               <ResponsiveContainer width="100%" height="100%">
+                 <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                   <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
+                   <XAxis 
+                     dataKey="date" 
+                     stroke="#52525b" 
+                     fontSize={12} 
+                     tickLine={false}
+                     axisLine={false}
+                     minTickGap={30}
+                   />
+                   <YAxis 
+                     stroke="#52525b" 
+                     fontSize={12} 
+                     tickLine={false}
+                     axisLine={false}
+                     domain={['auto', 'auto']}
+                     tickFormatter={(value) => `₹${value}`}
+                   />
+                   <Tooltip 
+                     contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '0.5rem', color: '#f4f4f5' }}
+                     itemStyle={{ color: '#10b981' }}
+                     formatter={(value: number) => [`₹${value.toFixed(2)}`, 'Price']}
+                   />
+                   <ReferenceLine 
+                     y={selectedAsset.supportLevel} 
+                     stroke="#10b981" 
+                     strokeDasharray="3 3" 
+                     label={{ position: 'insideBottomRight', value: 'Support', fill: '#10b981', fontSize: 12 }} 
+                   />
+                   <Line 
+                     type="monotone" 
+                     dataKey="price" 
+                     stroke="#3b82f6" 
+                     strokeWidth={2} 
+                     dot={false} 
+                     activeDot={{ r: 6, fill: '#3b82f6', stroke: '#18181b', strokeWidth: 2 }} 
+                   />
+                 </LineChart>
+               </ResponsiveContainer>
             </div>
 
             <div className="flex justify-end space-x-4">
