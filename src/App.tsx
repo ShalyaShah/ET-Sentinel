@@ -10,7 +10,10 @@ import { BSChecker } from './components/BSChecker';
 import { Portfolio } from './components/Portfolio';
 import { OnboardingModal } from './components/OnboardingModal';
 import { ChatProvider, useChatContext } from './context/ChatContext';
+import { ToastProvider } from './context/ToastContext';
 import { ChatSidebar } from './components/ChatSidebar';
+import { ToastContainer } from './components/ToastContainer';
+import { AlertSimulator } from './components/AlertSimulator';
 import { MessageSquare } from 'lucide-react';
 
 function AppContent() {
@@ -42,6 +45,8 @@ function AppContent() {
 
   return (
     <div className="flex h-screen bg-zinc-950 text-zinc-100 font-sans overflow-hidden">
+      <ToastContainer />
+      <AlertSimulator />
       {showOnboarding && <OnboardingModal onComplete={handleOnboardingComplete} />}
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
       
@@ -72,8 +77,10 @@ function AppContent() {
 
 export default function App() {
   return (
-    <ChatProvider>
-      <AppContent />
-    </ChatProvider>
+    <ToastProvider>
+      <ChatProvider>
+        <AppContent />
+      </ChatProvider>
+    </ToastProvider>
   );
 }
