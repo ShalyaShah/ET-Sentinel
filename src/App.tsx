@@ -14,6 +14,7 @@ import { ThreatRadar } from './components/ThreatRadar';
 import { RetailTrapRadar } from './components/RetailTrapRadar';
 import { ExecutionHub } from './components/ExecutionHub';
 import { QuantTerminal } from './components/QuantTerminal';
+import { Settings } from './components/Settings';
 import { OnboardingModal } from './components/OnboardingModal';
 import { ChatProvider, useChatContext } from './context/ChatContext';
 import { ToastProvider } from './context/ToastContext';
@@ -72,12 +73,7 @@ function AppContent() {
         {activeTab === 'retailtrap' && <RetailTrapRadar />}
         {activeTab === 'execution' && <ExecutionHub />}
         {activeTab === 'quant' && <QuantTerminal />}
-        {activeTab === 'settings' && (
-          <div className="max-w-3xl mx-auto py-12 px-6 text-center">
-            <h1 className="text-3xl font-bold text-white tracking-tight mb-4">Settings</h1>
-            <p className="text-zinc-400">Configure your broker integrations and alert preferences here.</p>
-          </div>
-        )}
+        {activeTab === 'settings' && <Settings />}
 
         {/* Floating Chat Button */}
         <button

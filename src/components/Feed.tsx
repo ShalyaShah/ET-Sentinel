@@ -97,7 +97,6 @@ export function Feed({ riskProfile }: FeedProps) {
         setSignals(data);
       } catch (err) {
         console.error("Failed to generate feed:", err);
-        setError("Failed to load your personalized feed. Showing default signals instead.");
         setSignals(MOCK_SIGNALS);
       } finally {
         setIsLoading(false);

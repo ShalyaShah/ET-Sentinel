@@ -26,7 +26,7 @@ export function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
         <Activity className="text-emerald-500 w-8 h-8" />
         <span className="text-xl font-bold text-white tracking-tight">ET Sentinel</span>
       </div>
-      <nav className="flex-1 px-4 space-y-2 mt-4">
+      <nav className="flex-1 px-4 space-y-2 mt-4 overflow-y-auto">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
@@ -34,11 +34,10 @@ export function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors ${
-                isActive
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors ${isActive
                   ? 'bg-zinc-800 text-white'
                   : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'
-              }`}
+                }`}
             >
               <Icon className="w-5 h-5" />
               <span className="font-medium">{item.label}</span>
