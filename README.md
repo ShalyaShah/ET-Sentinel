@@ -234,7 +234,7 @@ npm run lint
 
 | Variable | Purpose |
 | --- | --- |
-| `GEMINI_API_KEY` | Reserved for future Gemini-powered AI analysis workflows |
+| `GEMINI_API_KEY` | Reserved for future Gemini-powered AI analysis workflows. *Note: If this is left as the placeholder, the app will gracefully fall back to displaying built-in mock data for demonstration purposes.* |
 | `APP_URL` | Intended app base URL for hosted/runtime integrations |
 
 ## Product Principles
